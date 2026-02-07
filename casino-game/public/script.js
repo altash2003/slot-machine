@@ -5,11 +5,10 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 // --- Scene Setup ---
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1a1a1a);
-// Add some fog for depth
 scene.fog = new THREE.FogExp2(0x1a1a1a, 0.02);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 15, 30); // Adjusted viewing angle
+camera.position.set(0, 15, 30);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -42,11 +41,12 @@ scene.add(spotLight);
 const textureLoader = new THREE.TextureLoader();
 const fbxLoader = new FBXLoader();
 
-const reels = []; // Will store the reel objects here
+const reels = []; 
 let isSpinning = false;
 const reelSpeeds = [0, 0, 0];
 
-// Load Textures
+// CORRECTED PATHS (Matching your GitHub flat structure)
+// Note the spelling differences "pachinko" vs "pachinnko" based on your screenshots
 const texColor = textureLoader.load('assets/pachinnko_02.png');
 const texMetal = textureLoader.load('assets/pachinko_Metalness.png');
 const texRough = textureLoader.load('assets/pachinko_Roughness.png');
@@ -68,7 +68,7 @@ const machineMaterial = new THREE.MeshStandardMaterial({
     roughness: 1.0
 });
 
-// Load Model
+// Load Model (CORRECTED PATH)
 fbxLoader.load('assets/pachinko.fbx', (object) => {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('spin-btn').disabled = false;
@@ -77,12 +77,9 @@ fbxLoader.load('assets/pachinko.fbx', (object) => {
         if (child.isMesh) {
             child.material = machineMaterial;
             
-            // Identify Reels based on your FBX dump data
-            // The dump showed "Roll", "Roll1", "Roll2"
+            // Identify Reels based on FBX structure
             if (child.name.includes('Roll') || child.parent.name.includes('Roll')) {
-                // If the mesh itself is the roll or its parent is
                 const reelObj = child.name.includes('Roll') ? child : child.parent;
-                // Avoid duplicates
                 if (!reels.includes(reelObj)) {
                     reels.push(reelObj);
                 }
@@ -90,10 +87,10 @@ fbxLoader.load('assets/pachinko.fbx', (object) => {
         }
     });
 
-    // Sort reels by X position to ensure left-to-right spinning order
+    // Sort reels left-to-right
     reels.sort((a, b) => a.position.x - b.position.x);
 
-    // Scale correction (FBX often comes in very small or very large)
+    // Scale correction
     object.scale.set(0.1, 0.1, 0.1); 
     object.position.set(0, 0, 0);
     
@@ -116,29 +113,26 @@ function startSpin() {
     spinButton.disabled = true;
     spinButton.innerText = "SPINNING...";
 
-    // Start reels one by one
+    // Start reels
     reels.forEach((reel, index) => {
         setTimeout(() => {
-            reelSpeeds[index] = 0.3 + (Math.random() * 0.1); // Random speed
+            reelSpeeds[index] = 0.3 + (Math.random() * 0.1); 
         }, index * 200);
     });
 
-    // Stop reels one by one
+    // Stop reels sequence
     setTimeout(() => { stopReel(0); }, 2000);
     setTimeout(() => { stopReel(1); }, 3000);
     setTimeout(() => { stopReel(2); }, 4000);
 }
 
 function stopReel(index) {
-    // Determine a "snap" angle (assuming 8 icons usually, or 360 degrees)
-    // We gradually slow down the speed
     const stopInterval = setInterval(() => {
         reelSpeeds[index] *= 0.95; // Decelerate
         if (reelSpeeds[index] < 0.005) {
             reelSpeeds[index] = 0;
             clearInterval(stopInterval);
             
-            // Check if all stopped
             if (index === 2) {
                 isSpinning = false;
                 spinButton.disabled = false;
@@ -150,19 +144,16 @@ function stopReel(index) {
 }
 
 function checkWin() {
-    // In a real casino, logic is server-side. 
-    // Here we just visually stop. 
-    // You can calculate rotation % 360 to find the visible symbol.
-    console.log("Spin Complete");
+    console.log("Spin Complete - Check logic here");
+    // You can add your win/loss logic here later
 }
 
 // --- Animation Loop ---
 function animate() {
     requestAnimationFrame(animate);
     
-    // Rotate reels based on current speeds
+    // Rotate reels
     reels.forEach((reel, index) => {
-        // Adjust axis based on model orientation (usually X)
         reel.rotation.x -= reelSpeeds[index]; 
     });
 
